@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TourismMatcher | Trouvez votre destination idéale</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Ajoutez ce style */
+        #map-container {
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-map-marked-alt"></i> TourismMatcher</h1>
+            <p>Trouvez les meilleures attractions selon vos préférences</p>
+        </header>
+
+        <main>
+            <section class="search-panel">
+                <div class="search-row">
+                    <div class="search-group">
+                        <label for="query"><i class="fas fa-search"></i> Que cherchez-vous ?</label>
+                        <input type="text" id="query" placeholder="Ex: musée, parc, plage...">
+                    </div>
+                    <div class="search-group">
+                        <label for="location"><i class="fas fa-map-marker-alt"></i> Localisation</label>
+                        <input type="text" id="location" placeholder="Pays ou ville">
+                    </div>
+                </div>
+
+                <div class="search-row">
+                    <div class="search-group">
+                        <label for="category"><i class="fas fa-tags"></i> Catégorie</label>
+                        <select id="category">
+                            <option value="">Toutes catégories</option>
+                            <option value="Culture">Culture</option>
+                            <option value="Nature">Nature</option>
+                            <option value="Histoire">Histoire</option>
+                            <option value="Architecture">Architecture</option>
+                        </select>
+                    </div>
+                    <div class="search-group">
+                        <label for="price"><i class="fas fa-coins"></i> Budget</label>
+                        <select id="price">
+                            <option value="">Tous budgets</option>
+                            <option value="$">$ Économique</option>
+                            <option value="$$">$$ Moyen</option>
+                            <option value="$$$">$$$ Luxe</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <button class="btn" onclick="search()">
+                    <i class="fas fa-paper-plane"></i> Rechercher
+                </button>
+            </section>
+            <div id="map-container">
+                     <div id="map"></div>
+            </div>
+
+            <section class="results-container" id="results">
+                <!-- Les résultats apparaîtront ici -->
+            </section>
+        </main>
+    </div>
+     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Font Awesome (si déjà utilisé) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <!-- Votre JS -->
+    <script src="script.js"></script>
+
+    <script>
+        async function search() {
+            const params = new URLSearchParams({
+                query: document.getElementById("query").value,
+                location: document.getElementById("location").value,
+                category: document.getElementById("category").value,
+                price: document.getElementById("price").value
+            });
+
+            try {
+                const response = await fetch(`http://localhost:8000/search?${params}`);
+                const data = await response.json();
+
+                let html = "";
+
+                if (data.results.length > 0) {
+                    data.results.forEach(place => {
+                        html += `
+                            <article class="result-card">
+                                <div class="card-body">
+                                    <h3 class="card-title">${place.name}</h3>
+                                    <div class="card-meta">
+                                        <span class="badge"><i class="fas fa-city"></i> ${place.city}</span>
+                                        <span class="badge"><i class="fas fa-flag"></i> ${place.country}</span>
+                                        <span class="badge"><i class="fas fa-tag"></i> ${place.category}</span>
+                                        <span class="badge price-badge">${place.price_range}</span>
+                                    </div>
+                                    <p class="card-text">${place.description}</p>
+                                </div>
+                            </article>
+                        `;
+                    });
+                } else {
+                    html = `
+                        <div class="no-results">
+                            <i class="fas fa-compass fa-3x" style="color: #adb5bd; margin-bottom: 1rem;"></i>
+                            <h3>Aucun résultat trouvé</h3>
+                            <p>Essayez d'élargir vos critères de recherche</p>
+                        </div>
+                    `;
+                }
+
+                document.getElementById("results").innerHTML = html;
+            } catch (error) {
+                document.getElementById("results").innerHTML = `
+                    <div class="no-results" style="color: var(--warning);">
+                        <i class="fas fa-exclamation-triangle fa-3x"></i>
+                        <h3>Erreur de connexion</h3>
+                        <p>Impossible de charger les résultats</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+textblob
+python-multipart
+requests

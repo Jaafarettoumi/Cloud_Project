@@ -2,12 +2,15 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 import json
+from mangum import Mangum
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://cloud-project-ebon.vercel.app/", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_headers=["*"],
     allow_methods=["*"],
 )
 
@@ -48,3 +51,5 @@ async def search_attractions(
         )]
 
     return {"results": results}
+
+handler = Mangum(app)

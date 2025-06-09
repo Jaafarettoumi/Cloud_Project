@@ -3,3 +3,4 @@ uvicorn
 textblob
 python-multipart
 requests
+mangum
